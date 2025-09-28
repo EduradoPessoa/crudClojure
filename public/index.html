@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Clojure - Cadastro de Clientes e Produtos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: #4facfe;
+            border-bottom-color: #4facfe;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .list-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .list-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .list-item p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .actions {
+            margin-top: 15px;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🚀 CRUD Clojure</h1>
+                <p>Sistema de Cadastro de Clientes e Produtos</p>
+            </div>
+            <div class="content">
+                <div class="tabs">
+                    <button class="tab active" id="clientes-tab" onclick="showTab('clientes')">👥 Clientes</button>
+                    <button class="tab" id="produtos-tab" onclick="showTab('produtos')">📦 Produtos</button>
+                </div>
+                
+                <!-- Aba de Clientes -->
+                <div id="clientes-content" class="tab-content">
+                    <div class="search-box">
+                        <input type="text" id="search-clientes" placeholder="Buscar clientes por nome, email ou cidade..." oninput="searchClientes()">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="showClienteForm()">➕ Novo Cliente</button>
+                    </div>
+                    
+                    <!-- Formulário de Cliente -->
+                    <div id="cliente-form" style="display: none; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 id="cliente-form-title">Novo Cliente</h3>
+                        <form onsubmit="saveCliente(event)">
+                            <input type="hidden" id="cliente-id">
+                            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label>Nome *</label>
+                                    <input type="text" id="cliente-nome" required placeholder="Digite o nome completo">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email *</label>
+                                    <input type="email" id="cliente-email" required placeholder="exemplo@email.com">
+                                </div>
+                            </div>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="tel" id="cliente-telefone" placeholder="(11) 99999-9999">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="cliente-cidade" placeholder="São Paulo">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Endereço</label>
+                                <input type="text" id="cliente-endereco" placeholder="Rua, número, bairro">
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                                <button type="button" class="btn btn-secondary" onclick="hideClienteForm()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Lista de Clientes -->
+                    <div id="clientes-list"></div>
+                </div>
+                
+                <!-- Aba de Produtos -->
+                <div id="produtos-content" class="tab-content" style="display: none;">
+                    <div class="search-box">
+                        <input type="text" id="search-produtos" placeholder="Buscar produtos por nome, categoria ou código..." oninput="searchProdutos()">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="showProdutoForm()">➕ Novo Produto</button>
+                    </div>
+                    
+                    <!-- Formulário de Produto -->
+                    <div id="produto-form" style="display: none; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h3 id="produto-form-title">Novo Produto</h3>
+                        <form onsubmit="saveProduto(event)">
+                            <input type="hidden" id="produto-id">
+                            <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label>Nome *</label>
+                                    <input type="text" id="produto-nome" required placeholder="Nome do produto">
+                                </div>
+                                <div class="form-group">
+                                    <label>Código *</label>
+                                    <input type="text" id="produto-codigo" required placeholder="SKU123">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição</label>
+                                <textarea id="produto-descricao" placeholder="Descrição detalhada do produto" rows="3"></textarea>
+                            </div>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label>Preço *</label>
+                                    <input type="number" id="produto-preco" required step="0.01" min="0" placeholder="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estoque</label>
+                                    <input type="number" id="produto-estoque" min="0" value="0" placeholder="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoria</label>
+                                    <select id="produto-categoria">
+                                        <option value="">Selecione...</option>
+                                        <option value="Eletrônicos">Eletrônicos</option>
+                                        <option value="Roupas">Roupas</option>
+                                        <option value="Casa e Jardim">Casa e Jardim</option>
+                                        <option value="Esportes">Esportes</option>
+                                        <option value="Livros">Livros</option>
+                                        <option value="Beleza">Beleza</option>
+                                        <option value="Alimentação">Alimentação</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                                <button type="button" class="btn btn-secondary" onclick="hideProdutoForm()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Lista de Produtos -->
+                    <div id="produtos-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

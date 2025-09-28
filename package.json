@@ -1,0 +1,24 @@
+{
+  "name": "crud-clojure",
+  "version": "1.0.0",
+  "description": "Sistema de cadastro de clientes e produtos em ClojureScript",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "npx shadow-cljs watch app",
+    "build": "npx shadow-cljs release app",
+    "server": "npx shadow-cljs server",
+    "clean": "npx shadow-cljs clean"
+  },
+  "keywords": [
+    "clojure",
+    "clojurescript",
+    "crud",
+    "reagent",
+    "shadow-cljs"
+  ],
+  "author": "Desenvolvedor Clojure",
+  "license": "MIT",
+  "devDependencies": {
+    "shadow-cljs": "^2.25.10"
+  }
+}
